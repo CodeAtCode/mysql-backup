@@ -5,10 +5,8 @@ use warnings FATAL => 'all';
 use YAML::XS 'LoadFile';
 use DBI;
 use POSIX 'strftime';
+use File::Find;
 no warnings 'experimental::smartmatch';
-
-#clear ouput folder
-`rm -rf out && mkdir out`;
 
 #read values from config.yaml
 my $config = LoadFile('config.yaml');
@@ -19,19 +17,25 @@ my $backupDir = $config->{webdav}->{backupDir};
 my $mysqlUsername = $config->{mysql}->{username};
 my $mysqlPassword = $config->{mysql}->{password};
 my $blacklist = $config->{blacklist};
-my $mountPoint = "/mnt/sqlbackup";
 
-# write to temp file to pipe username/password to mount
-open (OUTFILE, '>>cred');
-print OUTFILE "$webdavUsername\n$webdavPassword";
-close (OUTFILE);
-# create mountpoint
-`mkdir $mountPoint`;
-`cat cred | mount -t davfs $webdavUrl $mountPoint`;
-unlink('cred');
+my $filestoupload = "";
+my $pid = "";
+my $folder = POSIX::strftime('%Y/%m/%d', localtime);
+#clear ouput folder
+`rm -rf $folder && mkdir -p $folder`;
 
-my $mountPrefix = $mountPoint."/".$backupDir."/".POSIX::strftime('%Y/%m/%d', localtime);
-`mkdir -p $mountPrefix`;
+sub wanted() {
+  my $f = $File::Find::name;
+  if (-f $f) {
+    $filestoupload .= "put $f\n";
+  } else {
+    $filestoupload .= "cd " . $backupDir."\n";
+    $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . "\n";
+    $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . '/' . POSIX::strftime('%m', localtime) . "\n";
+    $filestoupload .= "mkdir " . $folder . "\n";
+    $filestoupload .= "cd $folder\n"
+  }
+}
 
 #connect to mysql
 my $connection = DBI->connect("DBI:mysql:information_schema:localhost:", $mysqlUsername, $mysqlPassword);
@@ -42,12 +46,27 @@ $sql->execute();
 while ((my $databaseName) = $sql->fetchrow_array()){
     if (not $databaseName ~~ $blacklist) {
         #use smartwatch to exclude items from blacklist
-        print $databaseName."\n";
+        print $databaseName." backup done!\n";
         #run dump command
-        `mysqldump --force --opt --user=$mysqlUsername --password=$mysqlPassword --databases $databaseName > out/$databaseName.sql`;
+        `mysqldump --force --opt --user=$mysqlUsername --password=$mysqlPassword --databases $databaseName > $folder/$databaseName.sql > /dev/null 2>&1`;
         # gzip
-        `gzip -f out/$databaseName.sql`;
-        `rm -f out/$databaseName.sql`;
-        `cp out/$databaseName.sql.gz $mountPrefix/$databaseName.sql.gz`
+        `gzip -f $folder/$databaseName.sql`;
+        `rm -f $folder/$databaseName.sql`;
     }
 }
+
+# write to temp file to pipe username/password to mount
+open (OUTFILE, '>>/root/.netrc');
+print OUTFILE "default\nlogin $webdavUsername\npasswd $webdavPassword";
+close (OUTFILE);
+
+find({'wanted'=>\&wanted, 'no_chdir' => 1},   "$folder/");
+$pid = open(POUT, "| cadaver $webdavUrl");
+sleep('3');
+print POUT $filestoupload;
+print POUT "bye\n";
+unlink('/root/.netrc');
+
+my $year = POSIX::strftime('%Y', localtime);
+sleep('100');
+`rm -rf $year`;

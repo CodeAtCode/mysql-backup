@@ -1,5 +1,5 @@
 webdav:
-  url: ""
+  url: "https://"
   username: ""
   password: ""
   backupDir: ""
@@ -8,5 +8,5 @@ mysql:
   password: ""
 blacklist:
 - information_schema
-- grabber
-- telefoongids
+- performance_schema
+- mysql

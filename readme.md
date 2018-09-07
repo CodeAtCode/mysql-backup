@@ -1,10 +1,10 @@
 # About
 
-This is a small script I created to backup my MySQL database. My hoster offers a free online storage service for VPS customers called ["Stack"](https://www.transip.nl/stack/). Stack has 1TB of storage! You can also access Stack via Webdav. That's why I created a script that dumps all my databbases, gzips them and uploads them via webdav to Stack.
+This script is based on https://github.com/stevenbraham/mysql-backup and https://github.com/ptillemans/davpush/
 
-# Why Perl?
+# Differences
 
-This script could of course have been written using only bash. However I find the syntax of bash confusing and I don't like to constantly pipe variables and command outputs to eachother. I wanted to use a proper programming language. I have a dislike for Python and I have never written a Perl program before, so I thougth this would be a fun learning expierence.
+We cannot use davfs (no fuse available) so this version use cadaver to upload everything.
 
 # How to use
 *(I take no responsibility if you use my script and something goes wrong)*
