@@ -48,7 +48,7 @@ while ((my $databaseName) = $sql->fetchrow_array()){
         #use smartwatch to exclude items from blacklist
         print $databaseName." backup done!\n";
         #run dump command
-        `mysqldump --force --opt --user=$mysqlUsername --password=$mysqlPassword --databases $databaseName > $folder/$databaseName.sql > /dev/null 2>&1`;
+        `mysqldump --force --opt --user=$mysqlUsername --password=$mysqlPassword --databases $databaseName > $folder/$databaseName.sql`;
         # gzip
         `gzip -f $folder/$databaseName.sql`;
         `rm -f $folder/$databaseName.sql`;
