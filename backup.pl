@@ -33,7 +33,7 @@ sub wanted() {
     $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . "\n";
     $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . '/' . POSIX::strftime('%m', localtime) . "\n";
     $filestoupload .= "mkdir " . $folder . "\n";
-    $filestoupload .= "cd $folder\n"
+    $filestoupload .= "cd $folder\n";
   }
 }
 
@@ -59,12 +59,12 @@ while ((my $databaseName) = $sql->fetchrow_array()){
 open (OUTFILE, '>>/root/.netrc');
 print OUTFILE "default\nlogin $webdavUsername\npasswd $webdavPassword";
 close (OUTFILE);
-
 find({'wanted'=>\&wanted, 'no_chdir' => 1},   "$folder/");
 $pid = open(POUT, "| cadaver $webdavUrl");
-sleep('3');
+sleep('2');
 print POUT $filestoupload;
 print POUT "bye\n";
+close POUT;
 unlink('/root/.netrc');
 
 my $year = POSIX::strftime('%Y', localtime);
