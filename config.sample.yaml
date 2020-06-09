@@ -10,3 +10,6 @@ blacklist:
 - information_schema
 - performance_schema
 - mysql
+- phpmyadmin
+files:
+- /etc/apache2/apache.conf
