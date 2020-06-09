@@ -19,3 +19,7 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 * YAML::XS
 * DBI
 * DBD::mysql
+
+# backup-file
+
+It use another parameter in the config where you can define the path where the files need to be backupped every day.
