@@ -14,13 +14,19 @@ my $webdavUrl = $config->{webdav}->{url};
 my $webdavUsername = $config->{webdav}->{username};
 my $webdavPassword = $config->{webdav}->{password};
 my $backupDir = $config->{webdav}->{backupDir};
-my @fileList = $config->{files};
-
+my $fileList = $config->{files};
+if ($ARGV[0] eq '--others') {
+    $fileList = $config->{files_others};
+} 
 my $filestoupload = "";
 my $pid = "";
 my $folder = POSIX::strftime('%Y/%m/%d', localtime);
 #clear ouput folder
 `rm -rf $folder && mkdir -p $folder`;
+
+foreach my $backupme ( @{$fileList} ) {
+    `cp $backupme $folder`;
+}
 
 sub wanted() {
   my $f = $File::Find::name;
@@ -33,10 +39,6 @@ sub wanted() {
     $filestoupload .= "mkdir " . $folder . "\n";
     $filestoupload .= "cd $folder\n";
   }
-}
-
-foreach my $backupme ( @{$config->{files}} ) {
-    `cp $backupme $folder`;
 }
 
 # write to temp file to pipe username/password to mount

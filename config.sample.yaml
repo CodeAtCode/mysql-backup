@@ -13,3 +13,5 @@ blacklist:
 - phpmyadmin
 files:
 - /etc/apache2/apache.conf
+files_others:
+- /etc/apache2/ports.conf
