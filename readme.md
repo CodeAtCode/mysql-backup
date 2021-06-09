@@ -19,6 +19,10 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 * DBI
 * DBD::mysql
 
+### Debian
+
+`libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl`
+
 ## backup.pl
 
 This one is intended to backup mysql db and the config file include a list of database that will be excluded.
