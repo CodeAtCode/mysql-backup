@@ -8,7 +8,7 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 
 # How to use
 
-1. Make sure you have all modules installed
+1. Make sure you have all modules installed and perl 5.30 >=
 2. Rename `config.sample.yaml` to `config.yaml`
 3. Fill out `config.yaml` with your information
 4. Create a cron or run `backup.pl`
@@ -22,6 +22,13 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 ### Debian
 
 `libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl`
+
+## Centos
+
+```
+yum install perl perl-CPAN
+cpan -i YAML::XS DBI DBD::mysql
+```
 
 ## backup.pl
 
