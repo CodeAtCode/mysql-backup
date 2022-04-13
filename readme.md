@@ -21,12 +21,12 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 
 ### Debian
 
-`libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl`
+`libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl expect`
 
 ## Centos
 
 ```
-yum install perl perl-CPAN
+yum install perl perl-CPAN expect
 cpan -i YAML::XS DBI DBD::mysql
 ```
 
