@@ -14,19 +14,13 @@ my $webdavUrl = $config->{webdav}->{url};
 my $webdavUsername = $config->{webdav}->{username};
 my $webdavPassword = $config->{webdav}->{password};
 my $backupDir = $config->{webdav}->{backupDir};
-my $fileList = $config->{files};
-if ($ARGV[0] eq '--others') {
-    $fileList = $config->{files_others};
-} 
+my @fileList = $config->{files};
+
 my $filestoupload = "";
 my $pid = "";
 my $folder = POSIX::strftime('%Y/%m/%d', localtime);
 #clear ouput folder
 `rm -rf $folder && mkdir -p $folder`;
-
-foreach my $backupme ( @{$fileList} ) {
-    `cp $backupme $folder`;
-}
 
 sub wanted() {
   my $f = $File::Find::name;
@@ -41,18 +35,28 @@ sub wanted() {
   }
 }
 
+foreach my $backupme ( @{$config->{files}} ) {
+    `cp $backupme $folder`;
+}
+
 # write to temp file to pipe username/password to mount
 open (OUTFILE, '>>/root/.netrc');
 print OUTFILE "default\nlogin $webdavUsername\npasswd $webdavPassword";
 close (OUTFILE);
-find({'wanted'=>\&wanted, 'no_chdir' => 1},   "$folder/");
-$pid = open(POUT, "| cadaver $webdavUrl");
-sleep('2');
-print POUT $filestoupload;
-print POUT "bye\n";
+$filestoupload .= "open $webdavUrl\n";
+find({'wanted'=>\&wanted, 'no_chdir' => 1}, "$folder/");
+$filestoupload .= "bye\n";
+$filestoupload .= "quit";
+open (OUTFILE, '>>/root/.cadaverrc');
+print OUTFILE "$filestoupload\n";
+close (OUTFILE);
+$pid = open(POUT, '| expect -c "set timeout -1; spawn cadaver --rcfile="/root/.cadaverrc"; sleep 1; send "y\\\n"; expect eof"');
 close POUT;
-unlink('/root/.netrc');
 
+print " Upload done!\n";
 my $year = POSIX::strftime('%Y', localtime);
 sleep('100');
 `rm -rf $year`;
+
+unlink('/root/.netrc');
+unlink('/root/.cadaverrc');
