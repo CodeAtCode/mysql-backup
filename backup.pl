@@ -55,18 +55,24 @@ while ((my $databaseName) = $sql->fetchrow_array()){
     }
 }
 
+$filestoupload .= "open $webdavUrl\n";
+find({'wanted'=>\&wanted, 'no_chdir' => 1}, "$folder/");
+$filestoupload .= "bye\n";
+$filestoupload .= "quit";
 # write to temp file to pipe username/password to mount
 open (OUTFILE, '>>/root/.netrc');
 print OUTFILE "default\nlogin $webdavUsername\npasswd $webdavPassword";
 close (OUTFILE);
-find({'wanted'=>\&wanted, 'no_chdir' => 1},   "$folder/");
-$pid = open(POUT, "| cadaver $webdavUrl");
-sleep('2');
-print POUT $filestoupload;
-print POUT "bye\n";
+open (OUTFILE, '>>/root/.cadaverrc');
+print OUTFILE "$filestoupload\n";
+close (OUTFILE);
+$pid = open(POUT, '| expect -c "set timeout -1; spawn cadaver --rcfile="/root/.cadaverrc"; sleep 1; send "y\\\n"; expect eof"');
 close POUT;
-unlink('/root/.netrc');
 
+print " Upload done!\n";
 my $year = POSIX::strftime('%Y', localtime);
 sleep('100');
 `rm -rf $year`;
+
+unlink('/root/.netrc');
+unlink('/root/.cadaverrc');
