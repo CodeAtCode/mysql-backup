@@ -7,6 +7,7 @@ use DBI;
 use POSIX 'strftime';
 use File::Find;
 no warnings 'experimental::smartmatch';
+use DateTime;
 
 #read values from config.yaml
 my $config = LoadFile('config.yaml');
@@ -15,36 +16,36 @@ my $webdavUsername = $config->{webdav}->{username};
 my $webdavPassword = $config->{webdav}->{password};
 my $backupDir = $config->{webdav}->{backupDir};
 my @fileList = $config->{files};
+my $filesave = $config->{file_dest}->{save};
 
 my $filestoupload = "";
 my $pid = "";
-my $folder = POSIX::strftime('%Y/%m/%d', localtime);
+my $folder = POSIX::strftime('%Y/%m/%d', localtime());
 #clear ouput folder
 `rm -rf $folder && mkdir -p $folder`;
 
 sub wanted() {
   my $f = $File::Find::name;
-  if (-f $f) {
-    $filestoupload .= "put $f\n";
-  } else {
-    $filestoupload .= "cd " . $backupDir."\n";
-    $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . "\n";
-    $filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime) . '/' . POSIX::strftime('%m', localtime) . "\n";
-    $filestoupload .= "mkdir " . $folder . "\n";
-    $filestoupload .= "cd $folder\n";
-  }
 }
 
 foreach my $backupme ( @{$config->{files}} ) {
-    `cp $backupme $folder`;
+    `cp -fr $backupme ./$folder/`;
 }
 
 # write to temp file to pipe username/password to mount
 open (OUTFILE, '>>/root/.netrc');
 print OUTFILE "default\nlogin $webdavUsername\npasswd $webdavPassword";
 close (OUTFILE);
+`tar -zcvf $filesave ./$folder/`;
+`rm -fr ./$folder/*`;
+`mv $filesave ./$folder/`;
 $filestoupload .= "open $webdavUrl\n";
-find({'wanted'=>\&wanted, 'no_chdir' => 1}, "$folder/");
+$filestoupload .= "cd " . $backupDir."\n";
+$filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime()) . "\n";
+$filestoupload .= "mkdir " . POSIX::strftime('%Y', localtime()) . '/' . POSIX::strftime('%m', localtime()) . "\n";
+$filestoupload .= "mkdir " . $folder . "\n";
+$filestoupload .= "cd $folder\n";
+$filestoupload .= "put $folder/$filesave\n";
 $filestoupload .= "bye\n";
 $filestoupload .= "quit";
 open (OUTFILE, '>>/root/.cadaverrc');
@@ -55,7 +56,7 @@ close POUT;
 
 print " Upload done!\n";
 my $year = POSIX::strftime('%Y', localtime);
-sleep('100');
+sleep('60');
 `rm -rf $year`;
 
 unlink('/root/.netrc');

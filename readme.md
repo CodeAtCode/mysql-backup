@@ -18,6 +18,7 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 * YAML::XS
 * DBI
 * DBD::mysql
+* DateTime
 
 ### Debian
 
@@ -27,7 +28,7 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 
 ```
 yum install perl perl-CPAN expect
-cpan -i YAML::XS DBI DBD::mysql
+cpan -i YAML::XS DBI DBD::mysql DateTime
 ```
 
 ## backup.pl

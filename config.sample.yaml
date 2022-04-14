@@ -15,3 +15,5 @@ files:
 - /etc/apache2/apache.conf
 files_others:
 - /etc/apache2/ports.conf
+file_dest:
+  save: name-files.tar.gz
