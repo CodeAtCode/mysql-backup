@@ -22,7 +22,7 @@ We cannot use davfs (no fuse available) so this version use cadaver to upload ev
 
 ### Debian
 
-`libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl expect`
+`libyaml-libyaml-perl libclass-dbi-perl libdbd-mysql-perl expect libdatetime-perl`
 
 ## Centos
 
