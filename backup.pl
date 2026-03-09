@@ -6,7 +6,6 @@ use YAML::XS 'LoadFile';
 use DBI;
 use POSIX 'strftime';
 use File::Find;
-no warnings 'experimental::smartmatch';
 
 #read values from config.yaml
 my $config = LoadFile('config.yaml');
@@ -44,7 +43,7 @@ $sql->execute();
 
 #loop over databases and execute dump command
 while ((my $databaseName) = $sql->fetchrow_array()){
-    if (not $databaseName ~~ $blacklist) {
+    if (not grep { $_ eq $databaseName } @{$blacklist}) {
         #use smartwatch to exclude items from blacklist
         print $databaseName." backup done!\n";
         #run dump command
